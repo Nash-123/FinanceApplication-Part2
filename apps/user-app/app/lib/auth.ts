@@ -1,8 +1,11 @@
 import db from "@repo/db/client";
 import CredentialsProvider from "next-auth/providers/credentials"
 import bcrypt from "bcrypt";
+import { generateOTP , verifyOTP} from "@repo/ui/otpUtils";
+import twilio from 'twilio';
 
 export const authOptions = {
+    
     providers: [
       CredentialsProvider({
           name: 'Credentials',
@@ -21,6 +24,9 @@ export const authOptions = {
             });
 
             if (existingUser) {
+                console.log(`password from DB is ${existingUser.password}`);
+                console.log(`Raw password from user is ${credentials.password}`)
+                console.log(`Hashed password from user is ${hashedPassword}`);
                 const passwordValidation = await bcrypt.compare(credentials.password, existingUser.password);
                 if (passwordValidation) {
                     return {
@@ -39,7 +45,22 @@ export const authOptions = {
                         password: hashedPassword
                     }
                 });
-            
+                // You should send an OTP to the users phone number
+                // const twilioClient = twilio('','');
+                // async function sendOTP(phoneNumber: string, otp: string){
+                //     try {
+                //         const message= await twilioClient.message.create({
+                //             body: `your OTP is: ${otp}`,
+                //             from: '',
+                //             to: phoneNumber
+                //         });
+                //         console.log('OTP sent successfully:', message.sid);
+                //     } catch (error) {
+                //         console.error('Error sending OTP:', error);
+                //         throw new Error('Failed to send OTP');
+                //     }
+                // }
+               // await sendOTP(credentials.phone, generateOTP);
                 return {
                     id: user.id.toString(),
                     name: user.name,
